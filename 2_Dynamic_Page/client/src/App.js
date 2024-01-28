@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
 
-let id = 2;
-let dbnotes = [
-  { id: 0, user_note: "경기과학기술대학교 빅데이터 AWS 해커톤" },
-  { id: 1, user_note: "S3로 Static Page를 만들어 봅시다." },
-];
+// 'REACT_APP_' prefix 필수
+const { REACT_APP_API_URL } = process.env;
+console.log({ REACT_APP_API_URL });
 function App() {
   const [notes, setNotes] = useState([]);
   const [newNote, setNewNote] = useState("");
@@ -16,7 +14,9 @@ function App() {
 
   // 브라우저가 렌더링(접속 또는 새로고침)될때마다 실행
   const fetchNotes = () => {
-    fetch(`${process.env.REACT_APP_API_URL}/notes`)
+    console.log("[fetchNotes] fetch notes from database");
+    console.log(`${REACT_APP_API_URL}/notes`);
+    fetch(`${REACT_APP_API_URL}/notes`)
       .then((response) => response.json())
       .then((data) => setNotes(data));
   };
@@ -25,23 +25,28 @@ function App() {
     e.preventDefault();
     if (!newNote) return;
 
-    console.log("[addNote] add ONE note");
-    id = id + 1;
-    dbnotes.push({ id: id, user_note: newNote });
-    setNotes(dbnotes);
-    setNewNote("");
+    fetch(`${REACT_APP_API_URL}/notes`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: newNote }),
+    }).then((addedNote) => {
+      setNotes([...notes, addedNote]);
+      setNewNote("");
+    });
   };
 
   const deleteNote = (id) => {
     console.log("[deleteNote] delete ONE note");
-    dbnotes = dbnotes.filter((note) => note.id !== id);
-    setNotes(dbnotes);
+    fetch(`${REACT_APP_API_URL}/notes/${id}`, {
+      method: "DELETE",
+    }).then(() => {
+      setNotes(notes.filter((note) => note.id !== id));
+    });
   };
 
   const deleteNotes = () => {
     console.log("[deleteNotes] delete ALL notes");
-    dbnotes = [];
-    setNotes(dbnotes);
+    setNotes([]);
   };
 
   return (
