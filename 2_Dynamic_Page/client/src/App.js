@@ -15,10 +15,11 @@ function App() {
   // 브라우저가 렌더링(접속 또는 새로고침)될때마다 실행
   const fetchNotes = () => {
     console.log("[fetchNotes] fetch notes from database");
-    console.log(`${REACT_APP_API_URL}/notes`);
     fetch(`${REACT_APP_API_URL}/notes`)
-      .then((response) => response.json())
-      .then((data) => setNotes(data));
+      .then((res) => res.json())
+      .then((notes) => {
+        setNotes(notes);
+      });
   };
 
   const addNote = (e) => {
@@ -29,10 +30,13 @@ function App() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ content: newNote }),
-    }).then((addedNote) => {
-      setNotes([...notes, addedNote]);
-      setNewNote("");
-    });
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        setNotes([...notes, data.note]);
+        setNewNote("");
+      });
   };
 
   const deleteNote = (id) => {
