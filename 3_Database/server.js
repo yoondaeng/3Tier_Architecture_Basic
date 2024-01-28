@@ -51,8 +51,12 @@ app.post("/notes", (req, res) => {
       console.error("데이터베이스 저장 오류:", err);
       return res.status(500).json({ error: "데이터베이스 오류" });
     }
+    const addedId = result.insertId;
     console.log("사용자 메모 데이터베이스에 저장 완료");
-    res.json({ message: "메모가 저장되었습니다" });
+    res.json({
+      message: "메모가 저장되었습니다",
+      note: { id: addedId, user_note: userMessage },
+    });
   });
 });
 
@@ -73,6 +77,8 @@ app.delete("/notes/:id", (req, res) => {
     if (err) throw err;
     res.send(`Note with id ${id} deleted`);
   });
+  // delete marker 로직을 추가하기 어려움
+  // db 생성시 scheme를 정했기 때문에 수정이 쉽지 않음
 });
 
 // 전체 메모 삭제
