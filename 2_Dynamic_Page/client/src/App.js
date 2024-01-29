@@ -50,7 +50,12 @@ function App() {
 
   const deleteNotes = () => {
     console.log("[deleteNotes] delete ALL notes");
-    setNotes([]);
+    fetch(`${REACT_APP_API_URL}/notes`, {
+      method: "DELETE",
+    }).then((res) => {
+      console.log(res);
+      setNotes([]);
+    });
   };
 
   return (
