@@ -58,11 +58,11 @@ function App() {
     });
   };
 
-  const requestAIAdvice = (userNote, noteId) => {
+  const requestAIAdvice = (usernote, noteId) => {
     fetch(`${process.env.REACT_APP_API_URL}/ainotes`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: { userNote: userNote, noteId, noteId } }),
+      body: JSON.stringify({ content: { usernote: usernote, noteId, noteId } }),
     })
       .then(() => {
         fetchNotes();

@@ -45,7 +45,7 @@ app.get("/", (req, res) => {
 
 // AI 조언 추가 버튼 작동
 app.post("/ainotes", async (req, res) => {
-  const { usernote, nodeId } = req.body.content;
+  const { usernote, noteId } = req.body.content;
   console.log(`입력받은 내용 : ${usernote}`);
 
   // OpenAI API 호출
@@ -66,16 +66,16 @@ app.post("/ainotes", async (req, res) => {
   console.log("GPT 응답: ", gptResponse);
 
   const sql = "UPDATE notes SET ai_note = ? WHERE id = ?";
-  const values = [gptResponse, nodeId];
+  const values = [gptResponse, noteId];
   await new Promise((resolve, reject) => {
     db.query(sql, values, (err, result) => {
       if (err) reject(err);
       resolve(result);
     });
-  }).then((res) => {
+  }).then(() => {
     res.json({
       message: "AI advice created",
-      noteId: nodeId,
+      noteId: noteId,
     });
   });
 });
