@@ -2,6 +2,10 @@ const express = require("express");
 const cors = require("cors");
 
 const app = express();
+// cors: Cross-Origin Resource Sharing
+// 브라우저 보안 메커니즘
+// 서로 다른 오리진에서 정보를 요청하는 것을 차단
+// 서버측에서 허용 여부를 결정
 app.use(cors());
 app.use(express.json());
 
