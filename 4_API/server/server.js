@@ -1,3 +1,4 @@
+const OpenAI = require("openai");
 const express = require("express");
 const mysql = require("mysql");
 const dotenv = require("dotenv");
@@ -8,12 +9,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const { DB_HOST, DB_USER, DB_PW, DB_NAME, OPENAI_API_KEY } = process.env;
+
 // MySQL 데이터베이스 연결 설정
 const db = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PW,
-  database: process.env.DB_NAME,
+  host: DB_HOST,
+  user: DB_USER,
+  password: DB_PW,
+  database: DB_NAME,
 });
 
 // 데이터베이스 연결
@@ -33,8 +36,48 @@ db.connect((err) => {
   });
 });
 
+// OPENAI 클라이언트 생성
+const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
+
 app.get("/", (req, res) => {
   res.json({ message: "서버 연결 완료" });
+});
+
+// AI 조언 추가 버튼 작동
+app.post("/ainotes", async (req, res) => {
+  const { usernote, nodeId } = req.body.content;
+  console.log(`입력받은 내용 : ${usernote}`);
+
+  // OpenAI API 호출
+  const completion = await openai.chat.completions.create({
+    messages: [
+      {
+        role: "system",
+        content:
+          "Your are expert in AWS, Tell me one AWS service names that I can learn additionally based on the data sent by the user. Reply in Korean",
+      },
+      { role: "user", content: usernote },
+    ],
+    model: "gpt-3.5-turbo",
+    max_tokens: 1000,
+  });
+
+  const gptResponse = completion.choices[0].message.content;
+  console.log("GPT 응답: ", gptResponse);
+
+  const sql = "UPDATE notes SET ai_note = ? WHERE id = ?";
+  const values = [gptResponse, nodeId];
+  await new Promise((resolve, reject) => {
+    db.query(sql, values, (err, result) => {
+      if (err) reject(err);
+      resolve(result);
+    });
+  }).then((res) => {
+    res.json({
+      message: "AI advice created",
+      noteId: nodeId,
+    });
+  });
 });
 
 // 메모 추가 요청 처리
